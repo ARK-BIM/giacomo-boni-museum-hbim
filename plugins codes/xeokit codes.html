@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html>
+<title>XEOKIT plugins examples</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+body, h1,h2,h3,h4,h5,h6 {font-family: "Montserrat", sans-serif}
+.w3-row-padding img {margin-bottom: 12px}
+/* Set the width of the sidebar to 120px */
+.w3-sidebar {width: 120px;background: #222;}
+/* Add a left margin to the "page content" that matches the width of the sidebar (120px) */
+#main {margin-left: 120px}
+/* Remove margins from "page content" on small screens */
+@media only screen and (max-width: 600px) {#main {margin-left: 0}}
+
+.footer {
+   position: fixed;
+   left: 0;
+   bottom: 0;
+   width: 100%;
+   background-color: #303030;
+   color: white;
+   text-align: CENTER;
+   font-family: poppins;
+   font-size: 20px;
+}
+
+
+a {
+  color: white;
+  text-decoration: none;
+  /* First we need to help some browsers along for this to work.
+     Just because a vendor prefix is there, doesn't mean it will
+     work in a browser made by that vendor either, it's just for
+     future-proofing purposes I guess. */
+  -o-transition:.5s;
+  -ms-transition:.5s;
+  -moz-transition:.5s;
+  -webkit-transition:.5s;
+  /* ...and now for the proper property */
+  transition:.5s;
+}
+a:hover { color: #57a2b8; }
+
+</style>
+<body class="w3-black">
+
+<nav class="w3-sidebar w3-bar-block w3-small w3-hide-small w3-center">
+
+  <a href="#" class="w3-bar-item w3-button w3-padding-large w3-black">
+    <p style= "text-align: left">XEOKIT plugins examples</p>
+  </a>
+  <a href="#about" class="w3-bar-item w3-button w3-padding-large w3-hover-black">
+    <p style= "text-align: left">Hotspot model</p>
+  </a>
+  <a href="#photos" class="w3-bar-item w3-button w3-padding-large w3-hover-black">
+    <p style= "text-align: left">Measurements center</p>
+  </a>
+</nav>
+
+<div class="w3-top w3-hide-large w3-hide-medium" id="myNavbar">
+  <div class="w3-bar w3-black w3-opacity w3-hover-opacity-off w3-center w3-small">
+    <a href="#" class="w3-bar-item w3-button" style="width:25% !important">HOME</a>
+    <a href="#about" class="w3-bar-item w3-button" style="width:25% !important">ABOUT</a>
+    <a href="#photos" class="w3-bar-item w3-button" style="width:25% !important">PHOTOS</a>
+	<a href="#contact" class="w3-bar-item w3-button" style="width:25% !important">CONTACT</a>
+  </div>
+</div>
+
+<div class="w3-padding-large" id="main">
+  <header class="w3-container w3-text-grey w3-padding-32 w3-center w3-black" id="home">
+  <h2 class="w3-text-light-grey" style= "text-align: left">XEOKIT plugins examples</h2>
+  
+  <p class="w3-text-grey" style= "text-align: left">XEOKIT plugins examples designed by following official XEOKIT tutorials. </p>
+   <p class="w3-text-grey" style= "text-align: left">Hotspot model plugin in order to create numeric and informative hotspot directly on the model; Measurement center plugin for querying geometric distances (X,Y,Z) on the model . </p>
+  </header>
+
+
+  <div class="w3-content w3-justify w3-text-grey w3-padding-64" id="about">
+    <h2 class="w3-text-light-grey">Hotspot model</h2>
+    <hr style="width:200px" class="w3-opacity">
+    <xmp style="width: fit-content" "block-size: fit-content">
+			
+    <script type="module">
+
+    import {Viewer} from "./lib/xeokit/viewer/Viewer.js";
+    import {NavCubePlugin} from "./lib/xeokit/plugins/NavCubePlugin/NavCubePlugin.js";
+    import {XKTLoaderPlugin} from "./lib/xeokit/plugins/XKTLoaderPlugin/XKTLoaderPlugin.js";
+    import {AnnotationsPlugin} from "./lib/xeokit/plugins/AnnotationsPlugin/AnnotationsPlugin.js";
+    import {DirLight} from "./lib/xeokit/viewer/scene/lights/DirLight.js";
+    import {SAO} from "./lib/xeokit/viewer/scene/postfx/SAO.js";
+
+    const viewer = new Viewer({
+        canvasId: "myCanvas",
+        transparent: true,
+		antialias: true
+    });
+	
+	const sao = viewer.scene.sao;
+
+sao.enabled = true; 
+sao.intensity = 0.15;
+sao.bias = 0.5;
+sao.scale = 500.0;
+sao.minResolution = 0.0;
+sao.kernelRadius = 100;
+sao.blendCutoff = 0.2;
+
+        const xktLoader = new XKTLoaderPlugin(viewer);
+		
+
+        const model = xktLoader.load({
+            id: "myModel",
+            src: "data/YOUR MODEL.xkt",
+            metaModelSrc: "data/meta.json",
+            edges: false
+        });
+	
+    model.on("loaded", function() {
+        viewer.cameraFlight.flyTo(model);
+    });
+	
+	window.viewer = viewer;
+	viewer.cameraControl.followPointer = true;
+		
+		    new NavCubePlugin(viewer, {
+        canvasId: "myNavCubeCanvas",
+        visible: true,           
+        size: 200,               
+        alignment: "topRight",   
+        topMargin: 170,          
+        cameraFly: true,       
+        cameraFitFOV: 45,        
+        cameraFlyDuration: 0.5 
+    });
+	
+var modal = document.getElementById("myModal");
+
+
+var btn = document.getElementById("myBtn");
+
+
+var span = document.getElementsByClassName("close")[0];
+
+
+btn.onclick = function() {
+  modal.style.display = "block";
+}
+
+
+span.onclick = function() {
+  modal.style.display = "none";
+}
+
+
+window.onclick = function(event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+};
+		const annotations = new AnnotationsPlugin(viewer, {
+
+        markerHTML: "<div class='annotation-marker' style='background-color: {{markerBGColor}};'>{{glyph}}</div>",
+        labelHTML: "<div class='annotation-label' style='background-color: {{labelBGColor}};'>\
+            <div class='annotation-title'>{{title}}</div>\
+            <div class='annotation-desc'>{{description}}</div>\
+            </div>",
+
+        values: {
+            markerBGColor: "red",
+            labelBGColor: "white",
+            glyph: "X",
+            title: "Untitled",
+            description: "No description"
+        }
+		
+        });
+
+        var prevAnnotationClicked = null;
+	
+	    annotations.on("markerClicked", (annotation) => {
+        annotation.setLabelShown(!annotation.getLabelShown());              
+		});
+	
+	    annotations.createAnnotation({
+
+            id: "myAnnotation1",
+
+            worldPos: [15.645, 9.88688, -9.67112],     >>>>>  annotation placement
+		
+            occludable: true,
+            markerShown: true,
+            labelShown: false,
+
+            values: {
+                glyph: "1",
+                title: "TITLE 1",
+                description: " ANNOTATION DESCRIPTION ",
+                markerBGColor: "white"
+            }
+        });
+		
+		annotations.createAnnotation({
+
+            id: "myAnnotation2",
+
+            worldPos: [7.239, 0.29, -2.47905],
+
+            occludable: true,
+            markerShown: true,
+            labelShown: false,
+
+            values: {
+                glyph: "2",
+                title: "TITLE 2",
+                description: "DESCRIPTION 2",,
+                markerBGColor: "white"
+            }	
+			
+       });
+
+ viewer.scene.clearLights();
+
+    new DirLight(viewer.scene, {
+        id: "keyLight",
+        dir: [0.8, -0.6, -0.8],
+        color: [0.3, 0.3, 0.3],
+        intensity: 0.3,
+        space: "view"
+    });
+
+    new DirLight(viewer.scene, {
+        id: "fillLight",
+        dir: [-0.8, -0.4, -0.4],
+        color: [0.3, 0.3, 0.3],
+        intensity: 1.2,
+        space: "view"
+    });
+
+    new DirLight(viewer.scene, {
+        id: "rimLight",
+        dir: [0.2, -0.8, 0.8],
+        color: [0, 0, 0],
+        intensity: 1,
+        space: "view"
+    });
+	
+	
+</script>
+	</xmp>
+	
+  </div>
+  
+
+  <div class="w3-padding-64 w3-text-grey w3-content" id="photos">
+    <h2 class="w3-text-light-grey">Measurements center</h2>
+    <hr style="width:200px" class="w3-opacity">
+
+    <xmp style="width: fit-content" "block-size: fit-content">
+			
+    <script type="module">
+
+    import {Viewer} from "./lib/xeokit/viewer/Viewer.js";
+    import {XKTLoaderPlugin} from "./lib/xeokit/plugins/XKTLoaderPlugin/XKTLoaderPlugin.js";
+    import {DistanceMeasurementsPlugin} from "./lib/xeokit/plugins/DistanceMeasurementsPlugin/DistanceMeasurementsPlugin.js";
+    import {NavCubePlugin} from "./lib/xeokit/plugins/NavCubePlugin/NavCubePlugin.js";
+    import {Mesh} from "./lib/xeokit/viewer/scene/mesh/Mesh.js";
+    import {buildGridGeometry} from "./lib/xeokit/viewer/scene/geometry/builders/buildGridGeometry.js";;
+    import {PhongMaterial} from "./lib/xeokit/viewer/scene/materials/PhongMaterial.js";
+    import {VBOGeometry} from "./lib/xeokit/viewer/scene/geometry/VBOGeometry.js";
+    import {DirLight} from "./lib/xeokit/viewer/scene/lights/DirLight.js";
+    import {SAO} from "./lib/xeokit/viewer/scene/postfx/SAO.js";
+
+    const viewer = new Viewer({
+        canvasId: "myCanvas",
+        transparent: true,
+		antialias: true,
+    });
+
+        const xktLoader = new XKTLoaderPlugin(viewer);
+		
+		
+const sao = viewer.scene.sao;
+
+sao.enabled = true; 
+sao.intensity = 0.15;
+sao.bias = 0.5;
+sao.scale = 500.0;
+sao.minResolution = 0.0;
+sao.kernelRadius = 100;
+sao.blendCutoff = 0.2;
+
+
+    new NavCubePlugin(viewer, {
+        canvasId: "myNavCubeCanvas",
+        visible: true,         
+        size: 180,               
+        alignment: "topRight",   
+        topMargin: 170,       
+        cameraFly: true,      
+        cameraFitFOV: 45,        
+        cameraFlyDuration: 0.3, 
+        color: "White",      
+        frontColor: "#bf8667", 
+        backColor: "#bf8667",
+        leftColor: "#469982",
+        rightColor: "#469982",
+        topColor: "#5f9bb0",
+        bottomColor: "#5f9bb0",
+        hoverColor: "rgba(0,15,5,0.4)" 
+    });
+	
+        const model = xktLoader.load({
+            id: "myModel",
+            src: "data/YOUR MODEL.xkt",
+            metaModelSrc: "data/meta.json",
+            edges: false,
+			saoEnabled: true
+        });
+
+		
+    model.on("loaded", function() {
+        viewer.cameraFlight.flyTo(model);
+    });
+	
+	window.viewer = viewer;
+	viewer.cameraControl.followPointer = true;
+			
+	var metrics = new function () {
+        this.scale = 1.0;
+        this.units = "meters";
+    }();
+	
+    var update = function () {
+        viewer.scene.metrics.scale = metrics.scale;
+        viewer.scene.metrics.units = metrics.units;
+        requestAnimationFrame(update);
+    };
+
+    update();
+	
+
+    var gui = new dat.GUI({ autoPlace: false });
+
+    gui.add(metrics, 'scale', 0.1, 10.0);
+    gui.add(metrics, 'units', ["meters", "centimeters", "millimeters", "yards", "feet", "inches"]);
+
+
+    var customContainer = document.getElementById('my-gui-container');
+    customContainer.appendChild(gui.domElement);
+	
+	    new Mesh(viewer.scene, {
+        geometry: new VBOGeometry(viewer.scene, buildGridGeometry({
+            size: 55,
+            divisions: 25
+        })),
+        material: new PhongMaterial(viewer.scene, {
+            color: [0.0, 0.0, 0.0],
+            emissive: [0.3, 0.3, 0.3]
+        }),
+        position: [10, 0, -15],
+        collidable: true
+    });
+	
+	var modal = document.getElementById("myModal");
+
+var btn = document.getElementById("myBtn");
+
+var span = document.getElementsByClassName("close")[0];
+
+btn.onclick = function() {
+  modal.style.display = "block";
+}
+
+span.onclick = function() {
+  modal.style.display = "none";
+}
+
+window.onclick = function(event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+}
+
+let enableMeasurement = true;
+document.getElementById("measures").onclick = function () {
+measurement(enableMeasurement);
+enableMeasurement = !enableMeasurement;
+}
+let distanceMeasurements = new DistanceMeasurementsPlugin(viewer);
+
+function measurement(bool) {
+
+if (bool) {
+distanceMeasurements.control.activate();
+} 
+else {
+distanceMeasurements.clear();
+distanceMeasurements.control.destroy();
+distanceMeasurements = new DistanceMeasurementsPlugin(viewer);
+}
+};
+
+    viewer.scene.clearLights();
+
+    new DirLight(viewer.scene, {
+        id: "keyLight",
+        dir: [0.8, -0.6, -0.8],
+        color: [0.3, 0.3, 0.3],
+        intensity: 0.3,
+        space: "view"
+    });
+
+    new DirLight(viewer.scene, {
+        id: "fillLight",
+        dir: [-0.8, -0.4, -0.4],
+        color: [0.3, 0.3, 0.3],
+        intensity: 1.2,
+        space: "view"
+    });
+
+    new DirLight(viewer.scene, {
+        id: "rimLight",
+        dir: [0.2, -0.8, 0.8],
+        color: [0, 0, 0],
+        intensity: 1,
+        space: "view"
+    });
+	
+	
+</script>
+	</xmp>
+
+  </div>
+  
+    <div class="footer">
+  <p> <a href= "https://ark-bim.github.io/index.html">GO BACK TO ARK-BIM</a> </p> 
+</div>
+
+</div>
+
+</body>
+</html>
