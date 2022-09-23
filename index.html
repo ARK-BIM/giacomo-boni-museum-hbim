@@ -1,599 +1,895 @@
-<!doctype html>
-<html lang="en">
+     <!DOCTYPE html>
+     <html lang="en" dir="ltr">
 
-<head>
+     <head>
+     <meta charset="utf-8">
+     <title>ARK-BIM</title>
+     <script src="10X_light.js" charset="utf-8"></script>
+	 <script src="https://use.fontawesome.com/releases/v6.2.0/js/all.js" crossorigin="anonymous"></script>
+	 <link rel="stylesheet" href="assets/css/style.css">
+	 <link rel="shortcut icon" href="assets/favicon.png" type="image/png">
 
-    <meta charset="utf-8">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <meta name="description" content="">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+     </head>
+     <body>
+	 
+     <div style="height: 100vh; width:70wh">
+     <div id="app"></div>
+     </div>
 
-    <title>ARK-BIM</title>
-	
-	<link href="fcf-assets/css/fcf.default.css" rel="stylesheet">
-	
-    <link href="fcf-assets/css/fcf.default-custom.css" rel="stylesheet">
-
-    <link rel="shortcut icon" href="assets/images/favicon.png" type="image/png">
-
-    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
-
-    <link rel="stylesheet" href="assets/css/LineIcons.css">
-
-    <link rel="stylesheet" href="assets/css/magnific-popup.css">
-
-    <link rel="stylesheet" href="assets/css/slick.css">
-
-    <link rel="stylesheet" href="assets/css/animate.css">
-
-    <link rel="stylesheet" href="assets/css/default.css">
-
-    <link rel="stylesheet" href="assets/css/style.css">
-	
-	<script src="https://use.fontawesome.com/releases/v5.15.3/js/all.js" crossorigin="anonymous"></script>
-
-</head>
-
-<body>
+	 <script>
+	 
+	 
 
 
-    <div class="preloader">
-        <div class="loader">
-            <div class="ytp-spinner">
-                <div class="ytp-spinner-container">
-                    <div class="ytp-spinner-rotator">
-                        <div class="ytp-spinner-left">
-                            <div class="ytp-spinner-circle"></div>
-                        </div>
-                        <div class="ytp-spinner-right">
-                            <div class="ytp-spinner-circle"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
+                 const cfg = {
+                   cloudId: 5933,
+                   projectId: 442174,
+                   ifcIds: [46291],
+				   backgroundColor: '#e3e3e3',
+                   bimdataPlugins: {
+					bcf: true,
+                    reload: true,
+                    model: true,
+                    help: true,
+                    fullscreen: true,
+					property: true,
+					edit: true,
+					comment: true,
+                    section: true,
+                    projection: true,
+                    selectOptions: true,
+                    structureAndProperties: true,
+                    logo: true,
+                    rightClickMenu: true,
+                    viewer3DNavCube: true,
+					viewer2d: true,
+					contextSwitch: true,
+					editProperties: true,
+					allowExport: true,
+                   }
+                 };
+                 const accessToken = "OCwkPT6qydsHBLIa76wydyWYSPOnZ06V";
+                 const { viewer, store, eventHub, setAccessToken } = initBIMDataViewer(
+                     "app",
+                     accessToken,
+                     cfg
+                 );
+				 
+				 
+		
+			
+				 
+				 
+	<!-- RIGHT CLICK FILTER  3D  SPACE--> 			 
+				 
+ viewer.registerPlugins([
+      {
+        name: "HideSpacePlugin",
+        component: {
+          render() {
+            return null;
+          },
+          created() {
+            // Add right click command
+            const rightClickMenu = this.$plugins.rightClickMenu;
+            const getspaceIds = () =>
+              this.$utils.getAllObjectsOfType("space").map(
+                object => object.uuid
+              );
+            const hidespace = () => {
+              this.$hub.emit("hide-objects", {
+                ids: getspaceIds()
+              });
+            };
+            const isspaceVisible = () => {
+              const allObjects = Object.values(
+                this.$plugins.viewer3D.xeokit.scene.objects
+              );
+              const spaceUUIDs = getspaceIds();
+              const spaceObjects = allObjects.filter(object =>
+                spaceUUIDs.includes(object.id)
+              );
+              return spaceObjects.some(spaceObject => spaceObject.visible);
+            };
+            rightClickMenu.registerCommand({
+              label: "Hide spaces",
+              picto: "K",
+              execute: hidespace,
+              predicate: isspaceVisible
+            });
+
+            // Register keyboard shortcut
+            this.$plugins.keyboardShortcutsManager.registerKeyboardShortcut(
+              "K",
+              hidespace
+            );
+          }
+        },
+      }
+    ]);
+				 
+
+
+    <!-- MODALS--> 
+
+        viewer.registerPlugins([{
+        name: "modals",
+        component: {
+        render() {
+            return null;
+        },
+        created() {
+            this.$plugins.modalManager.pushModal({
+            template: `
+                <div style="margin:70px; width: 380px; text-align: center; font-family: poppins">
+                <h1 style="font-weight: 850">ARK-BIM</h1>
+				<a>version 1.5.1</a>
+				<h2>Giacomo Boni Museum</h2>
+				
+                </div>`
+            });
+         },
+        },
+        }]);
+		
+    <!-- SETTING-->        
+		
+	    viewer.registerPlugins([{
+        name: "Settings",
+        component: {
+        template: `
+        <div style="width: 250px">
+		     <h4 style="text-align: left; font-family: poppins; margin-top: 1px">Settings</h4>
+		<div class="btn-group">
+        <button @click="onInfoClick" style="text-align: left"> <span style="color: #505050"> <i class="fas fa-info-circle fa-lg"></i> &nbsp </span>Info</button> 
+        <button @click="onHelpClick" style="text-align: left"> <span style="color: #505050"> <i class="fas fa-question-circle fa-lg"></i> &nbsp </span>Help</button>
+        <button @click="onFixClick" style="text-align: left"> <span style="color: #505050"> <i class="fas fa-wrench fa-lg"></i> &nbsp </span>Fix Resolution</button> 		
+        <button @click="onDownClick"style="text-align: left"> <span style="color: #505050"> <i class="fas fa-download fa-lg"></i> &nbsp </span>Download</button> 
         </div>
-    </div>
+        `,
+		             methods: {
+                     onInfoClick() {
+                     this.$plugins.modalManager.pushModal({
+                     template: `
+                <div style="margin:40px; width: 700px; font-family: poppins">
+                <h1 style="text-align: center">Information</h1>
+				<p>&nbsp;</p>
+				<h2 style="text-align: justify; font-weight: 800">ARK-BIM</h2>
+				<a style="text-align: justify">version 1.5.1</a>
+                <h3 style="text-align: justify; font-size: 13px">created by Filippo Diara</h3>
+				<p>This platform is based on 0.8.26 version of BIMData viewer (bimdata.io) 
+                and plugin implementation on HTML web app. BIMData viewer based 
+                itself on XEOKIT open source development tools.</p>
+				<p style="text-align: justify; font-color: grey">ARK-BIM codes are available on the official web site: <a href="https://ark-bim.github.io/">ARK-BIM</a> </p>
+                </div>`
+                           })
+                         },
+					 onHelpClick() {
+                     this.$plugins.modalManager.pushModal({
+                     template: `
+                     <div>
+					 <img src="https://raw.githubusercontent.com/phxd88/archivio/main/help.png">
+                     </div>`
+                           })
+                         },
+				onFixClick() {
+                     this.$plugins.modalManager.pushModal({
+                     template: `
+                <div style="margin:40px; width: 700px; font-family: poppins">
+                <h3 style="text-align: center">Fix resolution and page zoom</h3>
+				<p>&nbsp;</p>
+                <h4 style="text-align: justify; font-size: 16px">The interface is too big or too small?  Details are unsharp? Here is a fix:</h4>
+				<p style="text-align: justify; font-size: 15px">Press CTRL (control) button + scroll the mouse wheel to adjust page resolution and zoom!</p>
+				<p style="font-size: 15px; color: #303030"><b style="font-size: 15px; color: #353535"> 4K monitor:</b> suggested zoom: 50% - 75% </p>
+				<p style="font-size: 15px; color: #303030"><b style="font-size: 15px; color: #353535"> FullHD monitor:</b> suggested zoom: 80% - 100% </p>
+                </div>`
+                           })
+                         },
+				     onDownClick() {
+                     window.open("https://storage.gra.cloud.ovh.net/v1/AUTH_b6a1c0b6b7c041d3a71d56f84ce25102/bimdata-prod/cloud_5933/project_442174/5oZDbtxzysDUGEQBYCmKHSXhDdZAP8W6/museo_x.ifc?temp_url_sig=faad83f6ece9f3d8ebf0377504b7fd0541ea4648&temp_url_expires=1663936184")
+                         },
+                       },
+				 },
+            display: {
+            iconPosition: 'left',
+            content: 'simple'
+          },
+		  keepActive:true,
+          icon: {imgUri: 'assets/img/1.png'},
+          tooltip: "Settings"
+        }]);
+
+     <!-- RESOURCES--> 
+
+				 viewer.registerPlugins([{
+                     name: "Resources",
+                     component: {
+                       template: `
+                         <div class="btn-group" style="width: 350px">
+						 <h4 style="text-align: left; font-family: poppins; margin-top: 1px">Resources</h4>
+						   <button @click="onDescriptionClick"> <span style="color: #505050"> <i class="far fa-file-alt fa-lg"></i> &nbsp </span> Description</button>
+						   <button @click="onMAClick"> <span style="color: #505050"> <i class="far fa-file-alt fa-lg"></i>  &nbsp </span> Archaeological Monument Sheet</button>
+						   <button @click="onTFClick"> <span style="color: #505050"> <i class="far fa-file-alt fa-lg"></i>  &nbsp </span> Thermo-Fluid Analysis Report</button>
+						   <button @click="onRAClick"> <span style="color: #505050"> <i class="far fa-file-alt fa-lg"></i>  &nbsp </span> Archaeological Report</button>
+						   <button @click="onRRClick"> <span style="color: #505050"> <i class="far fa-file-alt fa-lg"></i> &nbsp </span> Restoration TechnicalReport</button>
+						   <button @click="onReferencesClick"> <span style="color: #505050"> <i class="far fa-bookmark fa-lg"></i> &nbsp </span> References</button>
+                         </div>`,
+                         methods: {
+                         onReferencesClick() {
+                          this.$plugins.modalManager.pushModal({
+                            template: `
+         <div style="margin: 20px; font-family: poppins">
+		 <h2>Bibliographic References</h2>
+         <table>
+         <tr>
+         <th>Author</th>
+         <th>Publication</th>
+         <th>Year</th>
 
 
+         </tr>
+		 <tr>
+         <td>Moretti, L.,</td>
+         <td>Sulle Stationes Municipiorum del Foro Romano, In: Athenaeum 46, 106-116.</td>
+         <td>1958</td>
+         </tr>
+         <tr>
+         <td>Buranelli Le Pera, S., Sasso D'Elia, L.,</td>
+         <td>Sacra via. Note topografiche. In: Bullettino della commissione archeologica comunale di Roma: XCI, 2. ISBN: 9788891313669</td>
+         <td>1986</td>
+         </tr>
+		 <tr>
+         <td>Steinby, E. M., (edited by)</td>
+         <td>Lexicon topographicum urbis Romae. Vol. 4; Roma Ed. Quasar. ISBN: 88-7140-135-2</td>
+         <td>1999</td>
+         </tr>
+         <tr>
+         <td>Carandini A., Carafa P., D’Alessio M. T., Filippi D., (edited by)</td>
+         <td>Santuario di Vesta, pendice del Palatino e Via Sacra. Scavi 1985-2016. Roma 2017, Edizioni Quasar. ISBN: 978-88-7140-804-0</td>
+         <td>2017</td>
+         </tr>
+         </table>
+         </div>`,
+                           });
+                         },
+						  onDescriptionClick() {
+                          this.$plugins.modalManager.pushModal({
+                            template: `
+                              <div style="width: 900px; height: 400px; margin: 100px; font-size: 18px; text-align: justify; font-family: poppins">
+							     <h2>Giacomo Boni Museum - Short Description</h2>
+								 <a> The still preserved remains are related to a series of structures that began to be installed (from the end of II century A.D.) on the pavement of the Via Sacra leaning against the pillars of the long Porch of perhaps Nero's age (so-called Porticus Neroniana). This series of eight rooms of the II-IV century A.D. has been interpreted in literature as generic tabernae or stationes exterarum civitatum. This last hypothesis is associated with the names of eastern Mediterranean cities on Greek inscriptions found nearby: the equivalent of medieval warehouses, set up for commercial purposes and / or for carrying out ritual activities.
+In the best preserved of these rooms in opus latericium, Giacomo Boni (Venice 1859-Rome 1925), the director of the excavation in the Roman Forum, de facto from 1898 and officially from 1903, opened the first Museum of the Forum in which to display his first important discoveries. The architectural structure (also called Museéto) is related to a rectangular building (about 12m x 6m) with an irregular internal barrel vault as roof covering. Nowadays, the external and internal walls show a great masonry (bricks) and render / plaster stratification, also related to mimetic restoration occurred over the years. External fronts also show different brick stamps without epigraphs related to the Severan age.
 
-    <section class="header-area">
-        <div class="navbar-area">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-12">
-                        <nav class="navbar navbar-expand-lg">
-                            <a class="navbar-brand" href="#">
-                                <img src="assets/images/logo.png" alt="Logo">
-                            </a>
+                                 </a>
+                              </div>`
+                           });
+                         },
+						 
+						 
+						 
+						 
+						 onMAClick() {
+                          this.$plugins.modalManager.pushModal({
+                            template: `
+                              <div style="width: 1600px; height: 950px; margin: 50px; font-size: 18px; text-align: justify; font-family: poppins">
+							     <h2>Archaeological Monument Datasheet</h2>
+<object data= "assets/pdf/MA.pdf"type="application/pdf" width="1600" height="950">
+</object>
+                              </div>`
+                           });
+                         },
+						 
+						 
+						 onTFClick() {
+                          this.$plugins.modalManager.pushModal({
+                            template: `
+                              <div style="width: 1600px; height: 950px; margin: 50px; font-size: 18px; text-align: justify; font-family: poppins">
+							     <h2>Thermo-Fluid Analysis Report</h2>
+<object data= "assets/pdf/TF.pdf"type="application/pdf" width="1600" height="950">
+</object>
+                              </div>`
+                           });
+                         },
+						 
+						  onRAClick() {
+                          this.$plugins.modalManager.pushModal({
+                            template: `
+                              <div style="width: 1600px; height: 950px; margin: 50px; font-size: 18px; text-align: justify; font-family: poppins">
+							     <h2>Archaeological Report - RIVA</h2>
+<object data= "assets/pdf/RA.pdf"type="application/pdf" width="1600" height="950">
+</object>
+                              </div>`
+                           });
+                         },
+						 
+						  onRRClick() {
+                          this.$plugins.modalManager.pushModal({
+                            template: `
+                              <div style="width: 1600px; height: 950px; margin: 50px; font-size: 18px; text-align: justify; font-family: poppins">
+							     <h2>Restoration Techical Report - RIVA</h2>
+<object data= "assets/pdf/RR.pdf"type="application/pdf" width="1600" height="950">
+</object>
+                              </div>`
+                           });
+                         },
+						 
+						 
+						 
+						 
+						 
+						 
+                       }
+                     },
+					 keepActive:true,
+                     display: {
+                       iconPosition: 'left',
+                       content: 'simple'
+                     },
+					 icon: {imgUri: 'assets/img/2.png'},
+                     tooltip: "Resources.tooltip",
+                     i18n: {
+                       en: {
+                         Resources: {
+                           tooltip: "Resources",
+                         }
+                       },
+                     }
+                   }]);
+				   
+				   
+				   	   
+				   
 
-                            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarEight" aria-controls="navbarEight" aria-expanded="false" aria-label="Toggle navigation">
-                                <span class="toggler-icon"></span>
-                                <span class="toggler-icon"></span>
-                                <span class="toggler-icon"></span>
-                            </button>
+    <!-- IMAGES--> 
+	
 
-                            <div class="collapse navbar-collapse sub-menu-bar" id="navbarEight">
-                                <ul class="navbar-nav ml-auto">
-                                    <li class="nav-item active">
-                                        <a class="page-scroll" href="#home">HOME</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="page-scroll" href="#info">Info</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="page-scroll" href="#features">features</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="page-scroll" href="#codes">Codes</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="page-scroll" href="#contact">CONTACT</a>
-                                    </li>
-                                </ul>
-                            </div>
 
-                        </nav> 
-                    </div>
-                </div> 
-            </div> 
-        </div> 
-        
-        <div id="home" class="slider-area">
-            <div class="bd-example">
-                <div id="carouselOne" class="carousel slide" data-ride="carousel">
-                    <ol class="carousel-indicators">
-                        <li data-target="#carouselOne" data-slide-to="0" class="active"></li>
-                        <li data-target="#carouselOne" data-slide-to="1"></li>
-                        <li data-target="#carouselOne" data-slide-to="2"></li>
-                    </ol>
+	    viewer.registerPlugins([{
+        name: "Images",
+        component: {
+        template: `
+                         <div class="btn-group" style="width: 250px">
+						 <h4 style="text-align: left; font-family: poppins; margin-top: 1px">Images</h4>
+						   <button @click="onGeneralClick"> <span style="color: #505050"> <i class="fa-solid fa-camera"></i>  &nbsp </span>General Images</button>
+						   <button @click="onOrtoClick"> <span style="color: #505050"> <i class="fa-solid fa-camera"></i> &nbsp </span>Orthophotos</button>
+						   <button @click="onStratClick"> <span style="color: #505050"> <i class="fa-solid fa-camera"></i> &nbsp </span>Stratigraphy</button>
+                         </div>`,
+						  methods: {
+							onGeneralClick() {
+                          this.$plugins.modalManager.pushModal({
+                            template: `
+                              <div style="width: 1600px; height: 900px; margin: 50px; font-size: 18px; text-align: justify; font-family: poppins">
+							     <h2>General Images</h2>
+        <div>
+		  <a target="_blank">
+             <img src="assets/img/1.jpg" width="auto" height="auto">
+		  </a>
+		  <a target="_blank">
+             <img src="assets/img/2.jpg" width="auto" height="auto">
+		  </a>
+		  <a target="_blank">
+             <img src="assets/img/3.jpg" width="auto" height="auto">
+		  </a>
+		  <a target="_blank">
+             <img src="assets/img/4.jpg" width="auto" height="auto">
+		  </a>
+		  <a target="_blank">
+             <img src="assets/img/5.jpg" width="auto" height="auto">
+		  </a>	
+		</div>
+                              </div>`
+                           });
+                         },
+						 
+						 
+						 						onOrtoClick() {
+                          this.$plugins.modalManager.pushModal({
+                            template: `
+                              <div style="width: 1600px; height: 900px; margin: 50px; font-size: 18px; text-align: justify; font-family: poppins">
+							     <h2>Orthophotos</h2>
+        <div>
+		  <a target="_blank">
+             <img src="assets/img/o1.jpg" width="auto" height="900">
+		  </a>
+		  <a target="_blank">
+             <img src="assets/img/o2.jpg" width="1650" height="auto">
+		  </a>
+		  <a target="_blank">
+             <img src="assets/img/o3.jpg" width="auto" height="900">
+		  </a>
+		  <a target="_blank">
+             <img src="assets/img/o4.jpg" width="1600" height="auto">
+		  </a>
+		  <a target="_blank">
+             <img src="assets/img/o5.jpg" width="auto" height="900">
+		  </a>	
+		  <a target="_blank">
+             <img src="assets/img/o6.jpg" width="1600" height="auto">
+		  </a>	
+		  <a target="_blank">
+             <img src="assets/img/o7.jpg" width="1600" height="auto">
+		  </a>	
+		</div>
+                              </div>`
+                           });
+                         },
+						 
+						 
+						 onStratClick() {
+                          this.$plugins.modalManager.pushModal({
+                            template: `
+                              <div style="width: 1600px; height: 900px; margin: 50px; font-size: 18px; text-align: justify; font-family: poppins">
+							     <h2>Stratigraphy</h2>
+        <div>
+		  <a target="_blank">
+             <img src="assets/img/s11.png" width="auto" height="900">
+		  </a>
+		  <a target="_blank">
+             <img src="assets/img/s22.png" width="1600" height="auto">
+		  </a>	
+		</div>
+                              </div>`
+                           });
+                         },
+						 
+						 
+						 
+                       }
+                     },
+					 keepActive:true,
+                     display: {
+                       iconPosition: 'left',
+                       content: 'simple'
+                     },
+					 icon: {imgUri: 'assets/img/3.png'},
+                     tooltip: "Images.tooltip",
+                     i18n: {
+                       en: {
+                         Images: {
+                           tooltip: "Images",
+                         }
+                       },
+                     }
+                   }]);
+	
 
-                    <div class="carousel-inner">
-                        <div class="carousel-item bg_cover active" style="background-image: url(assets/images/slider-1.jpg)">
-                            <div class="carousel-caption">
-                                <div class="container">
-                                    <div class="row justify-content-center">
-                                        <div class="col-xl-6 col-lg-7 col-sm-10">
-										    <h2 style="color:white; font-size: 38px">Cloud HBIM for Archaeology</h2> &nbsp
-                                            <h2 style="color:#e5e5e5; font-size: 25px">designed for stratigraphic contexts</h2>
-                                        </div>
-                                    </div> 
-                                </div> 
-                            </div> 
-                        </div> 
+     <!-- DATABASE--> 
 
-                        <div class="carousel-item bg_cover" style="background-image: url(assets/images/slider-2.jpg)">
-                            <div class="carousel-caption">
-                                <div class="container">
-                                    <div class="row justify-content-center">
-                                        <div class="col-xl-6 col-lg-7 col-sm-10">
-										 <h2 style="color:white; font-size: 38px">Cloud HBIM for Archaeology</h2> &nbsp
-                                         <h2 style="color:#e5e5e5; font-size: 25px">based on JavaScript, HTML, VueJS, XEOKIT</h2>
-                                        </div>
-                                    </div> 
-                                </div> 
-                            </div> 
-                        </div> 
-                        <div class="carousel-item bg_cover" style="background-image: url(assets/images/slider-3.jpg)">
-                            <div class="carousel-caption">
-                                <div class="container">
-                                    <div class="row justify-content-center">
-                                        <div class="col-xl-6 col-lg-7 col-sm-10">
-											<h2 style="color:white; font-size: 38px">Cloud HBIM for Archaeology</h2> &nbsp
-                                            <h2 style="color:#e5e5e5; font-size: 25px">designed with ad-hoc plugins</h2>
-                                        </div>
-                                    </div> 
-                                </div> 
-                            </div> 
-                        </div> 
-                    </div> 
-                </div> 
-            </div> 
+        viewer.registerPlugins([{
+                     name: "database",
+                     component: {
+                       template: `
+                         <div class="btn-group" style="width: 350px">
+						 <h4 style="text-align: left; font-family: poppins; margin-top: 1px">Database</h4>
+						   <button @click="onData1Click"> <span style="color: #505050"> <i class="fas fa-table fa-lg"></i> &nbsp </span> Indoor Thermo-Fluid - 66</button>
+						   <button @click="onData2Click"> <span style="color: #505050"> <i class="fas fa-table fa-lg"></i> &nbsp </span> Indoor Thermo-Fluid - 72</button>
+						   <button @click="onData3Click"> <span style="color: #505050"> <i class="fas fa-table fa-lg"></i> &nbsp </span> Indoor Thermo-Fluid - 84</button>
+                         </div>`,
+                         methods: {
+						 
+						 onData1Click() {
+                         window.open("Database_1/index.html")
+                         },
+						 onData2Click() {
+                         window.open("Database_2/index.html")
+                         },
+			             onData3Click() {
+                         window.open("Database_3/index.html")
+                         },
+                       }
+                     },
+					 keepActive:true,
+                     display: {
+                       iconPosition: 'left',
+                       content: 'simple'
+                     },
+					 icon: {imgUri: 'assets/img/4.png'},
+                     tooltip: "Database.tooltip",
+                     i18n: {
+                       en: {
+                         Database: {
+                           tooltip: "Database",
+                         }
+                       },
+                     }
+                   }]);
+
+     <!-- GEOGRAPHIC POSITION--> 
+
+				 viewer.registerPlugins([{
+                     name: "GEOGRAPHIC_POSITION",
+                     component: {
+                       template: `
+                    <div style="width: auto">
+					<h4 style="text-align: left; font-family: poppins; margin-top: 1px">Geographic position</h4>
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d274.14454211766656!2d12.48686883957093!3d41.89173150115582!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x132f61b383a9cdef%3A0xfa914007c0ec7de6!2sForo%20Romano!5e1!3m2!1sit!2sit!4v1663836797819!5m2!1sit!2sit" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+		            </div>`
+                     },
+                     display: {
+                       iconPosition: 'left',
+                       content: 'simple'
+                     },
+					 icon: {
+                     imgUri: 'assets/img/5.png'
+                     },
+                     tooltip: "Geographic_position.tooltip",
+                     i18n: {
+                       en: {
+                         Geographic_position: {
+                           tooltip: "Geographic position",
+                         }
+                       },
+                     }
+                   }]);
+
+    <!-- ISOLATE ELEMENTS--> 
+
+				 viewer.registerPlugins([{
+                     name: "Isolate Elements",
+                     component: {
+                       template: `
+                         <div style="width:250px" class="btn-group">
+						   <h4 style="text-align: left; font-family: poppins; margin-top: 1px">Isolate Elements</h4>
+                           <button @click="onIsolateWallsClick">Walls</button>
+						   <button @click="onIsolateColumnsClick">Columns</button>
+						   <button @click="onIsolateFootingsClick">Footings</button>
+						   <button @click="onIsolateWindowsClick">Windows</button>
+						   <button @click="onIsolateBeamsClick">Beams</button>
+						   <button @click="onIsolateSlabClick">Slabs</button>
+						   <button @click="onIsolateStairsClick">Stairs</button>
+						   <button @click="onIsolateDoorsClick">Doors</button>
+						   <button @click="onIsolateFurnituresClick">Furnitures</button>
+						   <button @click="onIsolateElementClick">Building Element</button>
+						   <button @click="onIsolateChimneyClick">Chimney</button>
+						   <button @click="onIsolateReinforcingClick">Reinforcing Bars</button>
+						   <button @click="onIsolateRoofClick">Roof</button>	    
+                           <button @click="onUnisolateClick" style="background-color: #c7c7c7">Reset scene</button>
+                         </div>`,
+                       methods: {
+                         onIsolateWallsClick() {
+                           this.$hub.emit("isolate-objects", {
+                             ids: this.$utils.getAllObjectsOfType("wall")
+							 .map(object => object.uuid)
+                           });
+                         },
+						 onIsolateColumnsClick() {
+                           this.$hub.emit("isolate-objects", {
+                             ids: this.$utils.getAllObjectsOfType("column")
+							 .map(object => object.uuid)
+                           });
+						 },
+				           onIsolateFootingsClick() {
+                           this.$hub.emit("isolate-objects", {
+                             ids: this.$utils.getAllObjectsOfType("footing")
+							 .map(object => object.uuid)
+                           });
+						 },
+					       onIsolateBeamsClick() {
+                           this.$hub.emit("isolate-objects", {
+                             ids: this.$utils.getAllObjectsOfType("beam")
+							 .map(object => object.uuid)
+                           });
+						 },
+						   onIsolateSlabClick() {
+                           this.$hub.emit("isolate-objects", {
+                             ids: this.$utils.getAllObjectsOfType("slab")
+							 .map(object => object.uuid)
+                           });
+						 },
+						   onIsolateStairsClick() {
+                           this.$hub.emit("isolate-objects", {
+                             ids: this.$utils.getAllObjectsOfType("stair")
+							 .map(object => object.uuid)
+                           });
+						 },
+						   onIsolateDoorsClick() {
+                           this.$hub.emit("isolate-objects", {
+                             ids: this.$utils.getAllObjectsOfType("door")
+							 .map(object => object.uuid)
+                           });
+						 },
+						   onIsolateFurnituresClick() {
+                           this.$hub.emit("isolate-objects", {
+                             ids: this.$utils.getAllObjectsOfType("furnishing_element")
+							 .map(object => object.uuid)
+                           });
+						 },
+						   onIsolateElementClick() {
+                           this.$hub.emit("isolate-objects", {
+                             ids: this.$utils.getAllObjectsOfType("building_element")
+							 .map(object => object.uuid)
+                           });
+						 },
+				        onIsolateWindowsClick() {
+                           this.$hub.emit("isolate-objects", {
+                             ids: this.$utils.getAllObjectsOfType("window")
+							 .map(object => object.uuid)
+                           });
+						 },
+						onIsolateRoofClick() {
+                           this.$hub.emit("isolate-objects", {
+                             ids: this.$utils.getAllObjectsOfType("roof")
+							 .map(object => object.uuid)
+                           });
+						 },
+						 onIsolateChimneyClick() {
+                           this.$hub.emit("isolate-objects", {
+                             ids: this.$utils.getAllObjectsOfType("chimney")
+							 .map(object => object.uuid)
+                           });
+						 },
+						 onIsolateReinforcingClick() {
+                           this.$hub.emit("isolate-objects", {
+                             ids: this.$utils.getAllObjectsOfType("reinforcing_bar")
+							 .map(object => object.uuid)
+                           });
+						 },
+                         onUnisolateClick() {
+                           this.$hub.emit("unisolate-all-objects");
+                         }
+                       }
+                     },
+                      display: {
+                       iconPosition: 'left',
+                       content: 'simple'
+                     },
+					 icon: {
+                     imgUri: 'assets/img/6.png',
+                     },
+					 keepActive: true,
+                     tooltip: "myCustomPlugin.tooltip",
+                     i18n: {
+                       en: {
+                         myCustomPlugin: {
+                           tooltip: "Isolate Elements",
+                         }
+                       },
+                     }
+                   }]);
+
+	
+     <!-- PICK STRATIGRAPHIC UNITS--> 
+	
+	  viewer.registerPlugins([{
+      name: "Pick Stratigraphic units",
+      component: {
+        template: `
+        <div style="width: 250px" class="btn-group">
+		<h4 style="text-align: left; font-family: poppins; margin-top: 1px">Pick stratigraphic units</h4>
+          <select v-model="priority" style="width: 100%; height: 30px">
+		    &nbsp
+            <option disabled value="">Stratigraphic Units</option>
+			&nbsp
+            <option style="font-family: poppins; font-size: 15px" value="low">US</option>
+            <option style="font-family: poppins; font-size: 15px" value="medium">USR</option>
+            <option style="font-family: poppins; font-size: 15px" value="high">USM</option>
+            </select>
+            <input type="text" v-model="index" style="text-align: center; height: 30px">
+			
+			&nbsp
+	
+		    <button @click="onLink_0Click" style="text-align: left"> <span style="color: #505050"> <i class="fas fa-question-circle fa-lg"></i> &nbsp </span> Help</button>
+
+			<button @click="onLink_1Click" style="text-align: left"> <span style="color: #505050"> <i class="fas fa-trash-alt fa-lg"></i> &nbsp </span> Remove selected</button>
+
+			<button @click="onLink_2Click" style="text-align: left"> <span style="color: #505050"> <i class="fas fa-trash-alt fa-lg"></i> &nbsp </span> Remove all</button>
         </div>
-
-    </section>
-
-    <section id="info" class="about-area">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-xl-6 col-lg-8">
-                    <div class="section-title text-center mt-30 pb-40">
-                        <h4 class="title wow fadeInUp" data-wow-duration="0.5s" data-wow-delay="0.3s">What is ARK-BIM?</h4>
-                        <p style="font-size: 16px; text-align: justify" class="text wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="1s">
-						ARK-BIM is a modular web HBIM platform for Archaeology. It was developed on the basis of <a href="https://bimdata.io" style="font-size: 16px">BIMData</a> and <a href="https://xeolabs.com/" style="font-size: 16px">XEOKIT</a>. 
-						Then the plugin implementation was designed via via JavaScript, VueJS, XEOKIT and HTML.
-						</p>
-                    </div> 
-                </div>
-            </div> 
-            
-            <div class="row">
-                <div class="col-lg-6">
-                    <div class="single-about d-sm-flex mt-30 wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="1.2s">
-                        <div class="about-icon">
-                            <span style="color: #8299c9"> <i class="fas fa-code fa-3x"></i> </span>
-                        </div>
-                        <div class="about-content media-body">
-                            <h4 class="about-title">Open Source</h4>   
-                            <p style="font-size: 14px; text-align: justify" class="text">ARK-BIM is based on powerfull BIMData (BIMData.io) and XEOKIT (xeolabs.com) open source codes. Thanks to FOSS development tools via JavaScript, VueJS, XEOKIT and HTML a custom viewer and platform can be created including ad-hoc plugins.</p>
-                        </div>
-                    </div> 
-                </div>
-                <div class="col-lg-6">
-                    <div class="single-about d-sm-flex mt-30 wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="1.4s">
-                        <div class="about-icon">
-						<span style="color: #df8176"> <i class="fas fa-university fa-3x"></i> </span>
-                        </div>
-                        <div class="about-content media-body">
-                            <h4 class="about-title"> For Archaeology</h4>
-                            <p style="font-size: 14px; text-align: justify" class="text">ARK-BIM was designed for managing HBIM projects related to Archaeology and Heritage assets. Actual web and client BIM platform have been designed for Architecture, Engineering & Construction, and they rarely can be adapted to historical peculiarities.</p>
-                        </div>
-                    </div> 
-                </div>
-                <div class="col-lg-6">
-                    <div class="single-about d-sm-flex mt-30 wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="1.6s">
-                        <div class="about-icon">
-                            <span style="color: #8dbfb1"> <i class="fas fa-puzzle-piece fa-3x"></i> </span>
-                        </div>
-                        <div class="about-content media-body">
-                            <h4 class="about-title">Ad-hoc features</h4>
-                            <p style="font-size: 14px; text-align: justify" class="text">In addition to all BIMData features, ARK-BIM includes plugins like: isolate elements; hotspot model; stratigraphic unit annotation; measurements center, 2D-3D switch and other important functionalities designed for Archaeology and Cultural Heritage.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="single-about d-sm-flex mt-30 wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="1.8s">
-                        <div class="about-icon">
-                            <span style="color: #d8ba81"> <i class="fas fa-sync fa-3x"></i> </span>
-                        </div>
-                        <div class="about-content media-body">
-                            <h4 class="about-title">Constantly Updated</h4>
-                            <p style="font-size: 14px; text-align: justify" class="text">ARK-BIM is a set of ad-hoc plugins inside the main viewer. The developed functionalities could be suitable for many archaeological sites but not for other contexts. For this reason, ARK-BIM features will be constantly implemented depending on case studies. </p>
-                        </div>
-                    </div> 
-                </div>
-            </div> 
-        </div> 
-    </section>
+        `,
+        data() {
+          return {
+            priority: "",
+            pickSubscription: null,
+            index: 1
+          };
+        },
+		
+				methods: {
+				    onLink_0Click() {
+                     this.$plugins.modalManager.pushModal({
+                     template: `
+                <div style="margin:50px; width: 800px; font-family: poppins">
+				<h2 style="text-align: justify">Pick stratigraphic units - help</h2>
+				<p>1) Select stratigraphic units typology and units number</p>
+			    <p>2) Pick units on highlight object of the model</p>
+				<p>3) Picked units will appear on the objects center of mass</p>
+				&nbsp
+				<p>- Press "Remove selected units" button in order to delete selected unit (object must be selected)</p>
+				<p>- Press "Remove all units" button in order to delete ALL units</p>
+								&nbsp
+				<h3 style="text-align: justify">ATTENTION!</h3>
+				<p>This tool has no memory and then no save option! Once you finished picking units you can save a screeshot</p>
+                </div>`
+                           })
+                         },
+                    onLink_1Click() {
+                      this.$hub.emit("delete-annotations", {
+                      ids: this.$utils.getSelectedObjectIds()
+                            });
+                          },
+					onLink_2Click() {
+                      this.$hub.emit("clear-annotations")
+                          },
+                      },
+		
+		
+        props: ["active"],
+        watch: {
+          active: {
+            handler(active) {
+              const viewer3D = this.$plugins.viewer3D;
+              viewer3D.selectOnClick = !active;
+              // viewer3D.highlightOnHover = !active; // To remove the highlight on hover
+              if (active) {
+                document.body.style.setProperty("cursor", "copy", "important");
+                this.pickSubscription = viewer3D.xeokit.cameraControl.on(
+                  "picked",
+                  pickResult => {
+                    if (!this.priority) {
+                      return this.$hub.emit('alert', { type: 'warning', message: 'Please select a stratigraphic units typology' });
+                    }
+                    if (!pickResult || !pickResult.entity) return;
+                    this.$hub.emit("create-annotations", {
+                      ids: [pickResult.entity.id],
+                      index: this.index,
+                      priority: this.priority
+                    });
+                  }
+                );
+              } 
+            }
+          }
+        }
+      },
+      display: {
+        iconPosition: "left",
+		content: "simple"
+      },
+	  	  			     icon: {
+                     imgUri: 'assets/img/7.png'
+                     },
+                     keepActive: true,
+	                       tooltip: "stratigraphic.tooltip",
+                     i18n: {
+                       en: {
+                         stratigraphic: {
+                           tooltip: "Pick Stratigraphic Units",
+                         }
+                       }
+                     },
+    }])
 	
-					</div> 
-					    <div class="section-title text-center pb-10"> 
-						&nbsp;
-						<p style="font-size: 16px">ARK-BIM requires a BIMData account for hosting IFC models, then through access and project tokens you can use your models. More info on
-                        <a href="https://bimdata.io" style="font-size: 16px">BIMData.io</a>
-						</p> &nbsp
-                    </div> 
-                    <div class="pricing-btn rounded-buttons text-center">
-                            <a class="main-btn rounded-three" href="schema/index.html">ARK-BIM FRAMEWORK</a>
-                    </div>
-  
-
-
-    <section id="features" class="portfolio-area">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-6">
-                    <div class="section-title text-center pb-20">
-                        <h3 class="title">Features</h3>
-                        <p style="text-align: justify" class="text">ARK-BIM includes default BIMData features. Moreover it has been implemented with plugins and features usefull for Heritage assets. </p>
-                    </div> 
-                </div>
-            </div> 
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="portfolio-menu pt-30 text-center">
-                        <ul>
-                            <li data-filter="*" class="active">ALL</li>
-                            <li data-filter=".branding-3">VueJS plugins</li>
-                            <li data-filter=".marketing-3">XEOKIT plugins</li>
-                        </ul>
-                    </div> 
-                </div>
-            </div> 
-            <div class="row grid">
-                <div class="col-lg-4 col-sm-6 branding-3">
-                    <div class="single-portfolio mt-30 wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="0.2s">
-                        <div class="portfolio-image">
-                            <img src="assets/images/portfolio-1.png" alt="">
-                            <div class="portfolio-overlay d-flex align-items-center justify-content-center">
-                                <div class="portfolio-content">
-                                    <div class="portfolio-icon">
-                                        <a class="image-popup" href="assets/images/portfolio-1.png"><i class="lni-zoom-in"></i></a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="portfolio-text">
-                            <h4 class="portfolio-title"><a>References plugin</a></h4>
-                            <p class="text">Popup informative modals, usefull for textual descriptions or other resources.</p>
-                        </div>
-                    </div> 
-                </div>
-                <div class="col-lg-4 col-sm-6 branding-3">
-                    <div class="single-portfolio mt-30 wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="0.4s">
-                        <div class="portfolio-image">
-                            <img src="assets/images/portfolio-2.png" alt="">
-                            <div class="portfolio-overlay d-flex align-items-center justify-content-center">
-                                <div class="portfolio-content">
-                                    <div class="portfolio-icon">
-                                        <a class="image-popup" href="assets/images/portfolio-2.png"><i class="lni-zoom-in"></i></a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="portfolio-text">
-                            <h4 class="portfolio-title"><a>Isolate Elements</a></h4>
-                            <p class="text">Usefull plugin in order to isolate desired elements based on IFC classification.</p>
-                        </div>
-                    </div> 
-                </div>
-                <div class="col-lg-4 col-sm-6 branding-3">
-                    <div class="single-portfolio mt-30 wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="0.7s">
-                        <div class="portfolio-image">
-                            <img src="assets/images/portfolio-3.png" alt="">
-                            <div class="portfolio-overlay d-flex align-items-center justify-content-center">
-                                <div class="portfolio-content">
-                                    <div class="portfolio-icon">
-                                        <a class="image-popup" href="assets/images/portfolio-3.png"><i class="lni-zoom-in"></i></a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="portfolio-text">
-                            <h4 class="portfolio-title"><a>Pick Stratigraphic Units</a></h4>
-                            <p class="text">Real-time pick and annotate stratigraphic units directly on the model.</p>
-                        </div>
-                    </div> 
-                </div>
-                <div class="col-lg-4 col-sm-6 marketing-3">
-                    <div class="single-portfolio mt-30 wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="0.2s">
-                        <div class="portfolio-image">
-                            <img src="assets/images/portfolio-4.png" alt="">
-                            <div class="portfolio-overlay d-flex align-items-center justify-content-center">
-                                <div class="portfolio-content">
-                                    <div class="portfolio-icon">
-                                        <a class="image-popup" href="assets/images/portfolio-4.png"><i class="lni-zoom-in"></i></a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="portfolio-text">
-                            <h4 class="portfolio-title"><a>Hotspot models</a></h4>
-                            <p class="text">Simple measurements tools in order to extract distances from the model. </p>
-                        </div>
-                    </div> 
-                </div>
-                <div class="col-lg-4 col-sm-6 marketing-3">
-                    <div class="single-portfolio mt-30 wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="0.4s">
-                        <div class="portfolio-image">
-                            <img src="assets/images/portfolio-5.png" alt="">
-                            <div class="portfolio-overlay d-flex align-items-center justify-content-center">
-                                <div class="portfolio-content">
-                                    <div class="portfolio-icon">
-                                        <a class="image-popup" href="assets/images/portfolio-5.png"><i class="lni-zoom-in"></i></a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="portfolio-text">
-                            <h4 class="portfolio-title"><a>Measurements center</a></h4>
-                            <p class="text">Pick and measure distances (x, y, z projections) directly on the model</p>
-                        </div>
-                    </div> 
-                </div>
-				<div class="col-lg-4 col-sm-6">
-                    <div class="single-portfolio mt-30 wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="0.4s">
-                        <div class="portfolio-image">
-                            <img src="assets/images/portfolio-6.png" alt="">
-                            <div class="portfolio-overlay d-flex align-items-center justify-content-center">
-                                <div class="portfolio-content">
-                                    <div class="portfolio-icon">
-                                        <a class="image-popup" href="assets/images/portfolio-6.png"><i class="lni-zoom-in"></i></a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="portfolio-text">
-                            <h4 class="portfolio-title"><a>Edit properties</a></h4>
-                            <p class="text">Default BIMData feature of 0.8.26 viewer version: realtime modification of properties</p>
-                        </div>
-                    </div> 
-                </div>
-            </div> 
-        </div> 
-	    
-	    &nbsp
-		</div> 
-		 <div class="section-title text-center pb-10"> 
-		&nbsp
-		<p style="font-size: 20px">See ARK-BIM 1.5.1 in action!
-		</p> &nbsp
-         </div> 
-        <div class="pricing-btn rounded-buttons text-center">
-        <a class="main-btn rounded-three" href="https://ark-bim.github.io/version1.5.1-sample/">Sample model</a>
-        </div>
-	    
-    </section>
 	
-                        <p style="font-size: 16px; text-align: center" class="text wow fadeInUp" data-wow-duration="1.5s" data-wow-delay="1s">
-						More information here: <a href="https://bimdata.io" style="font-size: 16px">BIMData</a> and <a href="https://xeolabs.com/" style="font-size: 16px">XEOKIT</a>. 
-						</p>
-						
-						&nbsp
+    <!-- LEGEND--> 
 
-
-    <section id="codes" class="pricing-area">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-6">
-                    <div class="section-title text-center pb-20">
-                        <h3 class="title">Source Codes</h3>
-                        <p class="text">ARK-BIM codes are free to be shared and implemented! Download and craft your personal and modular platform! Source Codes here!</p>
-                    </div> 
-                </div>
-            </div> 
-            <div class="row justify-content-center">                
-                <div class="col-lg-4 col-md-7 col-sm-9">
-                    <div class="pricing-style-one mt-40 wow fadeIn" data-wow-duration="1.5s" data-wow-delay="0.2s">
-                        <div class="pricing-icon text-center">
-                            <img src="assets/images/wman.svg" alt="">
-                        </div>
-                        <div class="pricing-header text-center">
-                            <h5 class="sub-title"> ARK-BIM Viewer interface</h5>
-                        </div>
-                        <div class="pricing-list">
-                        </div>
-                        <div class="pricing-btn rounded-buttons text-center">
-                            <a class="main-btn rounded-three" href="/viewer_code/index.html">Explore</a>
-                        </div>
-                    </div> 
-                </div>
-                
-                <div class="col-lg-4 col-md-7 col-sm-9">
-                    <div class="pricing-style-one mt-40 wow fadeIn" data-wow-duration="1.5s" data-wow-delay="0.5s">
-                        <div class="pricing-icon text-center">
-                            <img src="assets/images/wman.svg" alt="">
-                        </div>
-                        <div class="pricing-header text-center">
-                            <h5 class="sub-title"> ARK-BIM VueJS plugins</h5>
-                        </div>
-                        <div class="pricing-list">
-                        </div>
-                        <div class="pricing-btn rounded-buttons text-center">
-                            <a class="main-btn rounded-three" href="/plugins codes/vuejs codes.html">explore</a>
-                        </div>
-                    </div> 
-                </div>
-                
-                <div class="col-lg-4 col-md-7 col-sm-9">
-                    <div class="pricing-style-one mt-40 wow fadeIn" data-wow-duration="1.5s" data-wow-delay="0.8s">
-                        <div class="pricing-icon text-center">
-                            <img src="assets/images/wman.svg" alt="">
-                        </div>
-                        <div class="pricing-header text-center">
-                            <h5 class="sub-title">ARK-BIM XEOKIT plugins</h5>
-                        </div>
-                        <div class="pricing-list">
-                        </div>
-                        <div class="pricing-btn rounded-buttons text-center">
-                            <a class="main-btn rounded-three" href="/plugins codes/xeokit codes.html">explore</a>
-                        </div>
-                    </div> 
-                </div>
-            </div> 
-					</div> 
-					    <div class="section-title text-center pb-10"> 
-						&nbsp;
-						<p>BIMData 0.8.26 JavaScript main viewer
-                        <a href="https://unpkg.com/@bimdata/viewer@0.8.26/dist/bimdata-viewer.min.js" style="font-size: 15px"> Download here</a>
-						<a> or</a>
-						<a href="https://drive.google.com/uc?export=view&id=1PTrPaD4UBWfMy76rQTu2ipkl7CDdGuiN" style="font-size: 15px"> here</a>
-						</p>
-                    </div> 
-        </div> 
-    </section>
-
- 	<p style="text-align: center"class="text">Designed by - Inspired by</p>
-    <section id="client" class="client-logo-area">
-        <div class="container">
-            <div class="row client-active">
-                <div class="col-lg-3">
-                    <div class="single-client text-center">   
-                        <a href="https://www.dad.polito.it/"> 
-						<img src="assets/images/client_logo_01.png">
-						</a>
-                    </div> 
-                </div>
-                <div class="col-lg-3">
-                    <div class="single-client text-center">    
-                        <a href="https://www.g4ch.polito.it/wordpress/"> 
-						<img src="assets/images/client_logo_02.png">
-						</a>
-                    </div> 
-                </div>
-                <div class="col-lg-3">
-                    <div class="single-client text-center">    
-                        <a href="https://www.cipaheritagedocumentation.org/"> 
-						<img src="assets/images/client_logo_03.png">
-						</a>
-                    </div> 
-                </div>
-                <div class="col-lg-3">
-				<div class="single-client text-center">   
-                        <a href="https://www.icomos.org/en"> 
-						<img src="assets/images/client_logo_04.png">
-						</a>
-                    </div> 
-                </div>
-                <div class="col-lg-3">
-                    <div class="single-client text-center">   
-                        <a href="https://www.dad.polito.it/"> 
-						<img src="assets/images/client_logo_05.png">
-						</a>
-                    </div> 
-                </div>
-                <div class="col-lg-3">
-                    <div class="single-client text-center">    
-                        <a href="https://www.g4ch.polito.it/wordpress/"> 
-						<img src="assets/images/client_logo_06.png">
-						</a>
-                    </div> 
-                </div>
-                <div class="col-lg-3">
-                    <div class="single-client text-center">    
-                        <a href="https://www.cipaheritagedocumentation.org/"> 
-						<img src="assets/images/client_logo_07.png">
-						</a>
-                    </div> 
-                </div>
-                <div class="col-lg-3">
-				<div class="single-client text-center">   
-                        <a href="https://www.icomos.org/en"> 
-						<img src="assets/images/client_logo_08.png">
-						</a>
-                    </div> 
-                </div>
-            </div> 
-        </div> 
-    </section>
-
-
-
-    <section id="contact" class="contact-area">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-6">
-                    <div class="section-title text-center pb-20">
-                        <h3 class="title">Get in touch</h3>
-                    </div> 
-                </div>
-            </div> 
-            <div class="row">
-                <div class="col-lg-6">
-                    <div class="contact-two mt-50 wow fadeIn" data-wow-duration="1.5s" data-wow-delay="0.2s">
-                        <h4 class="contact-title">Questions about ARK-BIM?</h4>
-                        <p style="text-align: justify"class="text">
-						ARK-BIM is a research project carried out by 
-						<a href="https://www.dad.polito.it/personale/scheda/(nominativo)/filippo.diara">Filippo Diara</a> 
-						of Politecnico di Torino, DAD department - 
-						<a href="https://www.g4ch.polito.it/">G4CH Lab</a>
-						. This work was inspired by the guidelines of the International Committee of Architectural Photogrammetry (CIPA), 
-						the scientific committee of ICOMOS, concerning Cultural Heritage documentation and preservation through the utilization 
-						of open source solutions for the correct data dissemination, idea also adopted by the GAMHer project (PRIN 2015-2020), 
-						who supported and shared this thought. 
-						</p>
-						&nbsp
-						<p style="text-align: justify"class="text">Feel free to contact us for further information or questions!</p>
-                        <ul class="contact-info">
-                            <li> 
-							<span style="color: #7baece"> <i class="far fa-envelope fa-lg"></i> </span>
-							arkbim.info@gmail.com
-							</li>
-                        </ul>
-                    </div> 			
-    </div>
-	&nbsp
-	&nbsp
-	&nbsp
-  <form id="fs-frm" name="simple-contact-form" accept-charset="utf-8" action="https://formspree.io/f/mgerlypo" method="post">
-  <fieldset id="fs-frm-inputs">
-    <label for="full-name">Name</label>
-    <input type="text" name="name" id="full-name" placeholder="Your full name" required="">
-    <label for="email-address">Email</label>
-    <input type="email" name="_replyto" id="email-address" placeholder="Your email address" required="">
-    <label for="message">Message</label>
-    <textarea rows="5" name="message" id="message" placeholder="Write here your message" required=""></textarea>
-    <input type="hidden" name="_subject" id="email-subject" value="Contact Form Submission">
-  </fieldset>
-  <input type="submit" value="Submit">
-</form>	
-            </div>
-            </div> 
-        </div> 
-    </section>
-
-
-    <a href="#" class="back-to-top"><i class="lni-chevron-up"></i></a>
-
-
-
-    <script src="assets/js/vendor/modernizr-3.6.0.min.js"></script>
-    <script src="assets/js/vendor/jquery-1.12.4.min.js"></script>
-    <script src="assets/js/bootstrap.min.js"></script>
-    <script src="assets/js/popper.min.js"></script>
-    <script src="assets/js/slick.min.js"></script>
-    <script src="assets/js/isotope.pkgd.min.js"></script>
-    <script src="assets/js/imagesloaded.pkgd.min.js"></script>
-    <script src="assets/js/jquery.magnific-popup.min.js"></script>
-    <script src="assets/js/scrolling-nav.js"></script>
-    <script src="assets/js/jquery.easing.min.js"></script>
-    <script src="assets/js/wow.min.js"></script>
-    <script src="assets/js/main.js"></script>
-	<script src="assets/js/ajax-contact.js"></script>
-	<script src="fcf-assets/js/lang/fcf.en.js"></script>
-    <script src="fcf-assets/js/fcf.just-validate.min.js"></script>
-    <script src="fcf-assets/js/fcf.form.js"></script>
+				 viewer.registerPlugins([{
+                     name: "strati",
+                     component: {
+                       template: `
+                         <div style="width: 450px; font-family: poppins; background-color: #e3e3e3">
+						   <h4 style="font-size:21px"> &nbsp Stratigraphic Units Legend<h4>
+						   &nbsp
+						   
+                           <p style="font-size:17px">  &nbsp <span class="dot1"></span> &nbsp Stratigraphic Unit </p> 
+						   &nbsp
+                           <p style="font-size:17px">  &nbsp <span class="dot2"></span> &nbsp Render / Plaster Stratigraphic Unit </p> 
+						   &nbsp
+                           <p style="font-size:17px">  &nbsp <span class="dot3"></span> &nbsp Masonry Stratigraphic Unit </p> 
+                         </div>`,
+                     },
+                     display: {
+                       iconPosition: 'left',
+                       content: 'free'
+                     },
+					 keepActive:true,
+					 icon: {
+                     imgUri: 'assets/img/8.png'
+                     },
+                     tooltip: "strati.tooltip",
+                     i18n: {
+                       en: {
+                         strati: {
+                           tooltip: "Stratigraphic Units Legend",
+                         }
+                       },
+                     }
+                   }]); 
+				   
+				   
 	
+    <!-- Hotspot MODEL--> 
+
+				 viewer.registerPlugins([{
+                     name: "Hotspot_model",
+                     component: {
+                       template: `
+                         <div style="width: 250px" class="btn-group">
+                           <button @click="onLink_1Click"> <span style="color: #505050"> <i class="fas fa-thumbtack fa-lg"></i> &nbsp </span> Interactive Model</button>
+                         </div>`,
+                       methods: {
+                         onLink_1Click() {
+                         window.open("https://github.com/ARK-BIM/version1.5.1-sample/blob/gh-pages/Hotspot%20Model/index.html")
+                         },
+                       }
+                     },
+                     display: {
+                       iconPosition: 'right',
+                       content: 'simple'
+                     },
+					 icon: {
+                     imgUri: 'assets/img/9.png'
+                     },
+                     tooltip: "Hotspot model",
+                     i18n: {
+                       en: {
+                         Interactive_model: {
+                           tooltip: "Hotspot model",
+                         }
+                       },
+                     }
+                   }]); 
+
+
+    <!-- MEASUREMENETS CENTER--> 
+
+				 viewer.registerPlugins([{
+                     name: "Measurements_center",
+                     component: {
+                       template: `
+                         <div style="width: 250px" class="btn-group">
+                     	   <button @click="onLink_1Click"> <span style="color: #505050"> <i class="fas fa-ruler-combined fa-lg"></i> &nbsp </span> Start to Measure </button>
+                         </div>`,
+                       methods: {
+                         onLink_1Click() {
+                         window.open("https://github.com/ARK-BIM/version1.5.1-sample/blob/gh-pages/Measurement%20Center/index.html")
+                         },
+                       }
+                     },
+                     display: {
+                       iconPosition: 'right',
+                       content: 'simple'
+                     },
+					 icon: {
+                     imgUri: 'assets/img/10.png'
+                     },
+                     tooltip: "measurements_center.tooltip",
+                     i18n: {
+                       en: {
+                         measurements_center: {
+                           tooltip: "Measurements Center",
+                         }
+                       },
+                     }
+                   }]); 	
+				  
+				   
+				   
+
+ <!-- NAV CUBE SETTINGS--> 
+
+	    new NavCubePlugin(viewer, {
+        canvasId: "myNavCubeCanvas",
+        visible: true,           // Initially visible (default)
+        size: 200,               // NavCube size in pixels (default is 200)
+        alignment: "topRight",   // Align NavCube to top-left of Viewer canvas
+        topMargin: 170,          // 170 pixels margin from top of Viewer canvas
+        cameraFly: true,       // Fly camera to each selected axis/diagonal
+        cameraFitFOV: 45,        // How much field-of-view the scene takes once camera has fitted it to view
+        cameraFlyDuration: 0.5 // How long (in seconds) camera takes to fly to each new axis/diagonal
+    });	
+
+	
+</script>
+
+
+ <!-- FOOTER--> 
+ 
+<div class="footer">
+  <p style="font-size: 13px; color: #303030"> &nbsp <b style="font-size: 15px; color: #353535"> ARK-BIM </b> &nbsp 1.5.1 - Cloud HBIM for Archaeology  </p> 
+</div>
+
 
 </body>
 
+	
 </html>
