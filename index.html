@@ -206,7 +206,7 @@
                      name: "Resources",
                      component: {
                        template: `
-                         <div class="btn-group" style="width: 350px">
+                         <div class="btn-group" style="width: 350px; height: 320px">
 						 <h4 style="text-align: left; font-family: poppins; margin-top: 1px">Resources</h4>
 						   <button @click="onDescriptionClick"> <span style="color: #505050"> <i class="far fa-file-alt fa-lg"></i> &nbsp </span> Description</button>
 						   <button @click="onMAClick"> <span style="color: #505050"> <i class="far fa-file-alt fa-lg"></i>  &nbsp </span> Archaeological Monument Sheet</button>
@@ -762,19 +762,18 @@ In the best preserved of these rooms in opus latericium, Giacomo Boni (Venice 18
 	
     <!-- LEGEND--> 
 
-				 viewer.registerPlugins([{
+				 
                      name: "strati",
                      component: {
                        template: `
-                         <div style="width: 450px; font-family: poppins; background-color: #e3e3e3">
-						   <h4 style="font-size:21px"> &nbsp Stratigraphic Units Legend<h4>
-						   &nbsp
+                         <div style="width: 400px; height: 160px; font-family: poppins; background-color: #e3e3e3">
+						   <h4 style="font-size:15px"> &nbsp Stratigraphic Units Legend<h4>
+						     
+                           <p style="font-size:12px">  &nbsp <span class="dot1"></span> &nbsp Stratigraphic Unit </p> 
+						  
+                           <p style="font-size:12px">  &nbsp <span class="dot2"></span> &nbsp Render / Plaster Stratigraphic Unit </p> 
 						   
-                           <p style="font-size:17px">  &nbsp <span class="dot1"></span> &nbsp Stratigraphic Unit </p> 
-						   &nbsp
-                           <p style="font-size:17px">  &nbsp <span class="dot2"></span> &nbsp Render / Plaster Stratigraphic Unit </p> 
-						   &nbsp
-                           <p style="font-size:17px">  &nbsp <span class="dot3"></span> &nbsp Masonry Stratigraphic Unit </p> 
+                           <p style="font-size:12px">  &nbsp <span class="dot3"></span> &nbsp Masonry Stratigraphic Unit </p> 
                          </div>`,
                      },
                      display: {
