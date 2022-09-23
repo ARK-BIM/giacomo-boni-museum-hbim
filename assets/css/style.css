@@ -1,0 +1,139 @@
+
+.btn-group button {
+  font-family: poppins;
+  background-color: white; /* Green background */
+  border: 1px solid black; /* Green border */
+  color: black; /* White text */
+  padding: 10px 24px; /* Some padding */
+  cursor: pointer; /* Pointer/hand icon */
+  width: 100%; /* Set a width if needed */
+  display: block; /* Make the buttons appear below each other */
+}
+
+.btn-group button:not(:last-child) {
+  border-bottom: none; /* Prevent double borders */
+}
+
+/* Add a background color on hover */
+.btn-group button:hover {
+  background-color: #c0c9cf;
+}
+
+
+.btn2-group button {
+  background-color: white; /* Green background */
+  border: 1px solid black; /* Green border */
+  color: black; /* White text */
+  padding: 10px 24px; /* Some padding */
+  cursor: pointer; /* Pointer/hand icon */
+  width: 100%; /* Set a width if needed */
+  display: block; /* Make the buttons appear below each other */
+}
+
+.btn2-group button:not(:last-child) {
+  border-bottom: none; /* Prevent double borders */
+}
+
+/* Add a background color on hover */
+.btn2-group button:hover {
+  background-color: red;
+}
+
+
+
+  table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  width: 100%;
+  border: 1px solid #ddd;
+  }
+
+  th, td {
+  text-align: left;
+  padding: 8px;
+  }
+
+  tr:nth-child(even){background-color: #f2f2f2}
+
+
+
+* {
+  box-sizing: border-box;
+}
+
+#myInput {
+  background-image: url('https://img.icons8.com/small/16/000000/search.png');
+  background-position: 10px 10px;
+  background-repeat: no-repeat;
+  width: 100%;
+  font-size: 13px;
+  padding: 12px 20px 12px 40px;
+  border: 1px solid #ddd;
+  margin-bottom: 12px;
+}
+
+#myTable {
+  border-collapse: collapse;
+  width: 100%;
+  border: 1px solid #ddd;
+  font-size: 15px;
+}
+
+#myTable th, #myTable td {
+  text-align: left;
+  padding: 12px;
+}
+
+#myTable tr {
+  border-bottom: 1px solid #ddd;
+}
+
+#myTable tr.header, #myTable tr:hover {
+  background-color: #ffffff;
+}
+
+.dot1 {
+  height: 17px;
+  width: 17px;
+  background-color: grey;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot2 {
+  height: 17px;
+  width: 17px;
+  background-color: orange;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot3 {
+  height: 17px;
+  width: 17px;
+  background-color: red;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.footer {
+   position: fixed;
+   left: 0;
+   bottom: 0;
+   width: 100%;
+   background-color: ;
+   color: black;
+   text-align: left;
+   font-family: poppins;
+   font-size: 13px;
+}
+
+.header {
+   width: 100%;
+   height: auto;
+      background-color: ;
+   color: balck;
+   text-align: left;
+   font-family: poppins;
+   font-size: 13px;
+}
